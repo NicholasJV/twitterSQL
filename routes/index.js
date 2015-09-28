@@ -24,7 +24,7 @@ router.get('/', function(req, res, next) {
 	  // console.log("JSONtweets:", JSONtweets);
 	  // console.log("TweetsRows:", JSON.stringify(tweetRows, null, 2));
 	  res.render('index', { tweets: tweetRows, showForm:true } );
-	})
+	}).catch(function(err){ throw err; })
 })
 
 // make a tweet
@@ -35,9 +35,24 @@ router.post('/', function(req, res, next) {
 
 // getting all tweets from user
 router.get('/users/:name', function(req, res, next) {
-  var tweets = tweetbank.find(req.params)
-  // res.json(tweets)
-  res.render('index', { tweets: tweets })
+	var tweets = [];
+	// console.log("req.p.name:", req.params.name);
+	dbConnect.User.find({where: { name: req.params.name }})
+	.then(function(user) {
+	  // var tweets = tweetbank.find(req.params)
+	  // res.json(tweets)
+	  // console.log("tweetsForPerson:", JSON.stringify(usersTweets, null, 2));
+	  	console.log("user:", JSON.stringify(user, null, 2));
+		return user.getTweets({ include: [ dbConnect.User ]})
+	})
+	.then(function(userTweets){
+		console.log("uT:", JSON.stringify(userTweets, null, 2));
+		res.render('index', { tweets: userTweets })
+	})
+	.catch(function(err){
+		throw err;
+	})
+
 })
 
 // get a single tweet
